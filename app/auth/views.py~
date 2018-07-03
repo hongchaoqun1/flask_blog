@@ -1,0 +1,61 @@
+from flask import Flask, redirect, render_template, request, url_for, flash, make_response
+from flask_login import login_user,login_required, logout_user,current_user
+
+from app import db
+from . import auth
+from ..models import User, Post
+from .forms import LoginForm, RegistForm, AboutForm
+
+@auth.route('/login', methods=["GET", "POST"])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user is not None and user.verify_password(form.password.data):
+            login_user(user, form.remember_me.data)
+            return redirect(url_for('main.index'))
+        flash("Invalid username or password")
+    return render_template('auth/login.html', form=form)   
+
+@auth.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash("you have logged out")
+    return redirect(url_for('main.index'))
+    
+@auth.route('/regist', methods=['GET', 'POST'])
+def register():
+    form = RegistForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data,email=form.email.data, password=form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash("you can now login.")
+        return redirect(url_for('auth.login'))
+    return render_template("auth/regist.html", form=form)
+
+
+@auth.route("/edit_myself/", methods=["GET", "POST"])
+@login_required
+def about_me():
+    form = AboutForm()
+    if request.method == "POST":
+        if form.validate_on_submit():
+            location = form.location.data
+            about_me = form.about_me.data
+            current_user.location = location
+            current_user.about_me = about_me
+            print(location, about_me)
+            db.session.add(current_user)
+            db.session.commit()
+            flash("修改成功")
+            redirect(url_for('main.index'))
+        else:
+            flash("请输入正确的格式")
+    return render_template("auth/edit_profile.html", form=form)    
+
+@auth.route("/show_myself/")
+@login_required
+def showMyself():
+    return render_template("auth/profile.html")

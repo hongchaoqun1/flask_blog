@@ -1,0 +1,279 @@
+{% extends "bootstrap/base.html"  %}
+{% import "bootstrap/wtf.html" as wtf  %}
+
+{% block title  %}文章{% endblock  %}
+
+{% block navbar %}
+  <nav role="navigation" class="navbar navbar-inverse dark-nav">
+    <div class="navbar-header">
+      <button data-target="#bs-example-navbar-collapse-3" data-toggle="collapse" class="navbar-toggle" type="button">
+	<span class="sr-only">Toggle navigation</span>
+	<span class="icon-bar"></span>
+	<span class="icon-bar"></span>
+	<span class="icon-bar"></span>
+      </button>
+     <a href="#" class="navbar-brand">Brand Name</a>
+   </div>
+   <div id="bs-example-navbar-collapse-3" class="collapse navbar-collapse">
+       <ul class="nav navbar-nav">
+          <li class="active"><a href="#">Home</a></li>
+	  <li><a href="#">About</a></li>
+	  <li class="dropdown">
+	     <a data-toggle="dropdown" class="dropdown-toggle" href="#">More <b class="caret"></b></a>
+	       	<ul role="menu" class="dropdown-menu">
+	            <li><a href="#">Action</a></li>
+		    <li><a href="#">Another action</a></li>
+		    <li><a href="#">Something else here</a></li>
+		    <li class="divider"></li>
+		    <li><a href="#">Separated link</a></li>
+		    <li class="divider"></li>
+		    <li><a href="#">One more separated link</a></li>
+		</ul>
+	  </li>
+	</ul>
+       <ul class="navbar-form navbar-right">
+	 {% if current_user.is_authenticated  %}
+	 <li><a href="#">{{ current_user.username  }}</a> </li>
+	 <li><a href="{{ url_for('auth.logout')  }}">退出</a></li>
+	 {% else  %}
+	 <li><a href="{{ url_for('auth.login')  }}">登录</a></li>
+	 <li><a href="{{ url_for('auth.register')  }}">注册</a></li>
+	 {% endif  %}
+       </ul>
+  </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+  	<div class="page-header">
+  		<h1>hello world</h1>
+  	</div>
+    <div class="row">
+        {% for message in get_flashed_messages()  %} 
+        <div class="alert alert-info alert-dismissable">
+	<button type="button" class="close" data-dismiss="alert"
+			aria-hidden="true">
+		&times;
+	</button>
+	{{ message }}
+         </div>  
+        {% endfor  %}
+    </div>
+
+    <div class="row">
+            <div class="post-date" class="col-md-3">
+	      {{ post.timestamp }}
+      	   </div>
+       	   <div class="post-author" class="col-md-6">
+	     <a href="#">
+	      {{ post.author.username  }} 
+	     </a>
+	   </div>
+	   <div>
+	    <button id="sub">
+        {% if is_collect == 1  %}
+           取消收藏
+        {% else %}
+           点击收藏
+        {% endif  %}    
+      </button>
+	   </div>
+     </div>	   
+     <div class="row">	   
+	   <div class="post-body">
+            {% if post.body_html  %} 
+	     {{ post.body_html|safe }}
+            {% else  %}
+              {{ post.body  }}
+            {% endif  %} 
+	   </div>
+    </div>
+
+    
+<div class="row">
+   <div>
+         <div class="panel panel-default">
+           <div class="panel-heading">评论列表</div>
+	 </div>  
+            {% if comments  %}
+	 {% for comment in comments  %}
+	 <div class="panel panel-default">
+          <div class="panel-body">
+   	    <div class="col-lg-2">
+               <a href="#">{{comment.author.username}} </a> <lable class="control-label">评论</label>
+            </div>
+               <label class="col-lg-9 control-label">{{comment.comment}}</label>
+            <div class="col-lg-1">
+               <a href="#" data-toggle="modal" data-target="#myModal"  onclick="comment({{ comment.id }});">回复</a> 
+               <a href="#">点赞</a></div>
+           </div>
+          </div>
+          {% endfor  %}
+          {% else  %}
+          <div class="panel panel-default "> 
+            <div class="panel-body">
+              <label class="col-lg-10 control-label">空空如也,快来发表神回复吧!</label>
+	    </div>
+	  </div>  
+          {% endif %}
+  
+   </div>
+</div>
+
+    <div class="row">
+      <div>
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <form class="form-horizontal" method="POST">
+              <div class="form-group">
+                <label class="col-lg-1 control-label">神回复</label>
+                <div class="col-lg-11">
+                  <input type="text" name="comment" placeholder="text" class="form-control">
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="col-lg-offset-1 col-lg-11">
+                  <input type="submit" class="btn btn-sm btn-default" value="发表评论">
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        </div>
+    </div>
+
+
+
+<div class="modal fade" id="myModal_fa" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+	<div class="modal-content">
+	  <div class="modal-header">
+	    <button type="button" class="close" data-dismiss="modal"
+		    aria-hidden="true">×
+	    </button>
+	    <h4 class="modal-title" id="myModalLabel">
+	      登录
+	    </h4>
+	  </div>
+	  <div class="modal-body">
+	    <form method="POST">
+	      {{ csrf_token }}
+	      <p>
+		title:<input type="text" name="title">
+	      </p>
+	      <p>
+		password:</br>
+		<textarea name="content" cols="70"></textarea>
+	      </p>
+	      <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+	      </button>
+	      <button type="submit" class="btn btn-default" data-dismiss="modal">提交
+	      </button>
+	    </form>
+	  </div>
+	  <div class="modal-footer">
+
+	  </div>
+	</div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+</div>
+    
+<!-- 底部表单 -->
+<input type="text" value="{{ current_user.id  }}" name="user_id" id="hidden">
+<input type="text" value="{{ post.id  }}" name="user_id" id="hidden_post">
+<input type="text" name="user_id" id="hidden_comment">
+
+</div>
+
+<!-- 模态框（Modal） -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+					&times;
+				</button>
+				<h4 class="modal-title" id="myModalLabel">
+					发表评论
+				</h4>
+			</div>
+			<div class="modal-body">
+				<input type="text" class="form-control" id="sub_comment">
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">关闭
+				</button>
+				<button type="button" class="btn btn-primary" id="sub_commit">
+					提交更改
+				</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal -->
+</div>
+
+
+
+{% endblock %}
+
+{% block scripts %}
+<!-- <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script> -->
+<script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script type=text/javascript>
+
+$(function(){
+ $("#sub").click(function(){
+  var txt = $("#sub").html();
+  var user_id = $("#hidden").val()
+  var pid = $("#hidden_post").val()
+  var value
+  
+  if(txt=="点击收藏"){
+  $("#sub").text( "取消收藏");
+  value = 1;
+  }else{
+  $("#sub").text("点击收藏");
+  value = 0;
+};
+
+
+params = {"value":value, "id":user_id, "pid": pid}
+$.ajax({
+type: "POST",
+url: "{{ url_for('main.is_collect') }}",
+dataType: "json",
+data: JSON.stringify(params),
+contentType: "application/json"
+})
+
+})
+});
+
+
+function comment(id) {
+    var a = document.getElementById("hidden_comment");
+    a.value = id;
+};
+
+$(function(){
+  $("#sub_commit").click(function(){
+    var sub_comment = $("#sub_comment").val();
+    var pid = $("#hidden_comment").val();
+
+     params = {"body":sub_comment, "pid":pid};
+  $.ajax({
+  type: "POST",
+  url: "{{ url_for('main.comments') }}",
+  dataType: "json",
+  data: JSON.stringify(params),
+  contentType: "application/json",
+  success: function (data) {
+    console.log(data)
+  }
+  })
+  });
+})
+
+</script>
+{% endblock %}

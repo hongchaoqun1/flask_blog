@@ -1,0 +1,52 @@
+from flask import Flask, render_template, redirect, request, url_for, flash
+from flask_login import login_required, current_user 
+
+from . import main
+from ..models import Post, User
+from .forms import PostForm
+from app import db, moment
+from .errors import page_not_found
+
+@main.route("/")
+def index():
+    return render_template("index.html")
+
+@main.route("/post/", methods=["GET", "POST"])
+def post():
+    form = PostForm() 
+    if request.method == "POST":
+        if form.validate_on_submit():
+            body = form.body.data
+            post = Post(body=body, author=current_user._get_current_object())
+            db.session.add(post)
+            db.session.commit()
+            return redirect(url_for('.post'))
+    return render_template("posts.html", form=form)
+
+@main.route("/articles/")
+def showPosts():
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    return render_template("_posts.html", posts = posts)
+
+@main.route("/article/<int:a_id>/", methods=['GET', 'POST'])
+def showArticle(a_id):
+    if request.method == "POST":
+        if True:
+            body = request.form.get("comment")
+            pid = a_id
+            comment = Post(comment=body, author=current_user._get_current_object(), pid=a_id)
+            db.session.add(comment)
+            db.session.commit()
+            flash("发表成功")
+
+    comments = Post.query.filter_by(pid = a_id)
+
+    post = Post.query.filter_by(id=a_id).first()
+
+    if not post:
+        redirect(url_for('.page_not_found'))
+    return render_template("article.html", post=post, comments=comments.all())    
+
+@main.route("is_collect")
+def collect():
+    pass
