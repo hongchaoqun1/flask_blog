@@ -14,7 +14,7 @@ class Config:
 
 class DevelopmentConfig(Config):
     Debug = True
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:root1root1@123@rm-bp15kq3103u1df435io.mysql.rds.aliyuncs.com:3306/test?charset=utf8'
+    SQLALCHEMY_DATABASE_URI = 'xxx'
     
 
 
